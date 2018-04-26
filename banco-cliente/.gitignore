@@ -1,13 +1,3 @@
-.metadata/
-.recommenders/
-RemoteSystemsTempFiles/
-Servers/
-.settings/
-.project
-.classpath
-*.class
-target/
-
 # See http://help.github.com/ignore-files/ for more about ignoring files.
 
 # compiled output
@@ -21,8 +11,11 @@ target/
 
 # IDEs and editors
 /.idea
+.project
+.classpath
 .c9/
 *.launch
+.settings/
 *.sublime-workspace
 
 # IDE - VSCode
