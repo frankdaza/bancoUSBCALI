@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-configuration PUBLIC
+"-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+"http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+<hibernate-configuration>
+    <session-factory>
+        <property name="hibernate.bytecode.use_reflection_optimizer">false</property>        
+        <mapping resource="com/banco/model/TipoDocumento.hbm.xml" />
+        <mapping resource="com/banco/model/TipoTransaccion.hbm.xml" />
+        <mapping resource="com/banco/model/Transaccion.hbm.xml" />
+        <mapping resource="com/banco/model/TipoUsuario.hbm.xml" />
+        <mapping resource="com/banco/model/CuentaRegistrada.hbm.xml" />
+        <mapping resource="com/banco/model/Cuenta.hbm.xml" />
+        <mapping resource="com/banco/model/Usuario.hbm.xml" />
+        <mapping resource="com/banco/model/Cliente.hbm.xml" />
+    </session-factory>
+</hibernate-configuration>
