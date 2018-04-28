@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.banco.dataaccess.dao.ITransaccionDAO;
 import com.banco.dto.mapper.ITransaccionMapper;
 import com.banco.exceptions.ZMessManager;
+import com.banco.model.Cliente;
 import com.banco.model.Cuenta;
 import com.banco.model.TipoTransaccion;
 import com.banco.model.Transaccion;
@@ -49,6 +50,8 @@ public class TransaccionLogic implements ITransaccionLogic {
     private ITipoTransaccionLogic tipoTransaccionLogic;
     @Autowired
     private IUsuarioLogic usuarioLogic;
+    @Autowired
+    private IClienteLogic clienteLogic;
 
     public void validateTransaccion(Transaccion transaccion)
         throws Exception {
@@ -388,59 +391,22 @@ public class TransaccionLogic implements ITransaccionLogic {
 
 	@Override
 	@Transactional(readOnly = false, propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-	public Integer consignarACuenta(String numeroCuenta, String login, Double valor) throws Exception {
+	public Integer consignarACuenta(String numeroCuenta, String login, Double valor, Long cliId) throws Exception {
 		Integer codigoExito = 0; // 0 -> No exitoso, 1 -> Exitoso.
 		try {
 			// Verifico que la cuenta exista y sea activa
 			Object[] variablesCuenta = {"cuenId", true, numeroCuenta, "=",
 											"activa", true, "S", "="};
 			List<Cuenta> listCuenta = this.cuentaLogic.findByCriteria(variablesCuenta, null, null);
-			if (listCuenta != null && !listCuenta.isEmpty() && valor > 0D) {				
+			if (listCuenta != null && !listCuenta.isEmpty() 
+					&& valor > 0D) {				
 				Cuenta cuentaCons = listCuenta.get(0);
 				
-				// Obtengo el objeto de consignacion
-				TipoTransaccion tipoTransaccion = this.tipoTransaccionLogic.getTipoTransaccion(2L);
+				Cliente cliente = this.clienteLogic.getCliente(cuentaCons.getCliente().getClieId());
 				
-				// Obtengo el usuario
-				Usuario usuario = this.usuarioLogic.getUsuario(login);
-				
-				// Creo una transacción
-				Transaccion transaccion = new Transaccion();
-				transaccion.setCuenta(cuentaCons);
-				transaccion.setFecha(new Date());
-				transaccion.setTipoTransaccion(tipoTransaccion);
-				transaccion.setUsuario(usuario);
-				transaccion.setValor(valor);
-				saveTransaccion(transaccion);		
-				
-				// Actualizo el valor del saldo de la cuenta
-				Double nuevoValor = cuentaCons.getSaldo() + valor;
-				cuentaCons.setSaldo(nuevoValor);
-				this.cuentaLogic.updateCuenta(cuentaCons);
-				codigoExito = 1; // Codigo exitoso
-			}
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-		}
-		return codigoExito;
-	}
-
-	@Override
-	@Transactional(readOnly = false, propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-	public RespuestaDTO retirarDinero(String numeroCuenta, String login, Double valor) throws Exception {
-		RespuestaDTO respuestaDTO = new RespuestaDTO(); // 0 -> No exitoso, 1 -> Exitoso.
-		try {
-			// Verifico que la cuenta exista y sea activa
-			Object[] variablesCuenta = {"cuenId", true, numeroCuenta, "=",
-											"activa", true, "S", "="};
-			List<Cuenta> listCuenta = this.cuentaLogic.findByCriteria(variablesCuenta, null, null);
-			if (listCuenta != null && !listCuenta.isEmpty() && valor > 0D) {				
-				Cuenta cuentaCons = listCuenta.get(0);
-				
-				// Verifico que el valor a retirar sea menor o igual al valor que existe en la cuenta
-				if (valor <= cuentaCons.getSaldo()) {
-					// Obtengo el objeto de retirar
-					TipoTransaccion tipoTransaccion = this.tipoTransaccionLogic.getTipoTransaccion(1L);
+				if (cliente.getClieId().equals(cliId)) {
+					// Obtengo el objeto de consignacion
+					TipoTransaccion tipoTransaccion = this.tipoTransaccionLogic.getTipoTransaccion(2L);
 					
 					// Obtengo el usuario
 					Usuario usuario = this.usuarioLogic.getUsuario(login);
@@ -455,14 +421,72 @@ public class TransaccionLogic implements ITransaccionLogic {
 					saveTransaccion(transaccion);		
 					
 					// Actualizo el valor del saldo de la cuenta
-					Double nuevoValor = cuentaCons.getSaldo() - valor;
+					Double nuevoValor = cuentaCons.getSaldo() + valor;
 					cuentaCons.setSaldo(nuevoValor);
 					this.cuentaLogic.updateCuenta(cuentaCons);
-					respuestaDTO.setCodigoError(1); // Codigo exitoso
-					respuestaDTO.setMensajeError("El retiro se ha realizado satisfactoriamente.");
+					codigoExito = 1; // Codigo exitoso
+				} else {
+					codigoExito = 0; // Codigo erróneo
+				}
+			}
+		} catch (Exception e) {
+			codigoExito = 0; // Codigo erróneo
+			log.error(e.getMessage(), e);
+		}
+		return codigoExito;
+	}
+
+	@Override
+	@Transactional(readOnly = false, propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+	public RespuestaDTO retirarDinero(String numeroCuenta, String login, Double valor, Long cliId, String clave) throws Exception {
+		RespuestaDTO respuestaDTO = new RespuestaDTO(); // 0 -> No exitoso, 1 -> Exitoso.
+		try {
+			// Verifico que la cuenta exista y sea activa
+			Object[] variablesCuenta = {"cuenId", true, numeroCuenta, "=",
+											"activa", true, "S", "="};
+			List<Cuenta> listCuenta = this.cuentaLogic.findByCriteria(variablesCuenta, null, null);
+			if (listCuenta != null && !listCuenta.isEmpty() && valor > 0D) {				
+				Cuenta cuentaCons = listCuenta.get(0);
+				
+				if (cuentaCons.getClave().equals(clave)) {
+					Cliente cliente = this.clienteLogic.getCliente(cuentaCons.getCliente().getClieId());
+					
+					if (cliente.getClieId().equals(cliId)) {
+						// Verifico que el valor a retirar sea menor o igual al valor que existe en la cuenta
+						if (valor <= cuentaCons.getSaldo()) {
+							// Obtengo el objeto de retirar
+							TipoTransaccion tipoTransaccion = this.tipoTransaccionLogic.getTipoTransaccion(1L);
+							
+							// Obtengo el usuario
+							Usuario usuario = this.usuarioLogic.getUsuario(login);
+							
+							// Creo una transacción
+							Transaccion transaccion = new Transaccion();
+							transaccion.setCuenta(cuentaCons);
+							transaccion.setFecha(new Date());
+							transaccion.setTipoTransaccion(tipoTransaccion);
+							transaccion.setUsuario(usuario);
+							transaccion.setValor(valor);
+							saveTransaccion(transaccion);		
+							
+							// Actualizo el valor del saldo de la cuenta
+							Double nuevoValor = cuentaCons.getSaldo() - valor;
+							cuentaCons.setSaldo(nuevoValor);
+							this.cuentaLogic.updateCuenta(cuentaCons);
+							respuestaDTO.setCodigoError(1); // Codigo exitoso
+							respuestaDTO.setMensajeError("El retiro se ha realizado satisfactoriamente.");
+						} else {
+							respuestaDTO.setCodigoError(0); // Codigo error
+							respuestaDTO.setMensajeError("No hay fondos sufientes para retirar el valor solicitado.");
+//							return respuestaDTO; 
+						}
+					} else {
+						respuestaDTO.setCodigoError(0); // Codigo error
+						respuestaDTO.setMensajeError("La cuenta no pertenece a ese cliente.");
+					}
 				} else {
 					respuestaDTO.setCodigoError(0); // Codigo error
-					respuestaDTO.setMensajeError("No hay fondos sufientes para retirar el valor solicitado.");
+					respuestaDTO.setMensajeError("La clave no es válida.");
 				}
 			} else {
 				respuestaDTO.setCodigoError(0); // Codigo error

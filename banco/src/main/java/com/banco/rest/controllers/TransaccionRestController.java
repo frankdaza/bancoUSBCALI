@@ -99,13 +99,14 @@ public class TransaccionRestController {
     
     
     @CrossOrigin
-    @GetMapping(value = "/consignarTransaccion/{numeroCuenta}/{login}/{valor}")
+    @GetMapping(value = "/consignarTransaccion/{numeroCuenta}/{login}/{valor}/{cliId}")
     public RespuestaDTO consignarTransaccion(@PathVariable("numeroCuenta") String numeroCuenta,
     		@PathVariable("login") String login,
-    		@PathVariable("valor") Double valor) throws Exception {
+    		@PathVariable("valor") Double valor,
+    		@PathVariable("cliId") Long cliId) throws Exception {
     	RespuestaDTO respuestaDTO = null;
         try {
-            Integer codigo = businessDelegatorView.consignarACuenta(numeroCuenta, login, valor);
+            Integer codigo = businessDelegatorView.consignarACuenta(numeroCuenta, login, valor, cliId);
             respuestaDTO = new RespuestaDTO();
             respuestaDTO.setCodigoError(codigo);
             
@@ -125,13 +126,15 @@ public class TransaccionRestController {
     }
     
     @CrossOrigin
-    @GetMapping(value = "/retiroTransaccion/{numeroCuenta}/{login}/{valor}")
+    @GetMapping(value = "/retiroTransaccion/{numeroCuenta}/{login}/{valor}/{cliId}/{clave}")
     public RespuestaDTO retiroTransaccion(@PathVariable("numeroCuenta") String numeroCuenta,
     		@PathVariable("login") String login,
-    		@PathVariable("valor") Double valor) throws Exception {
+    		@PathVariable("valor") Double valor,
+    		@PathVariable("cliId") Long cliId,
+    		@PathVariable("clave") String clave) throws Exception {
     	RespuestaDTO respuestaDTO = null;
         try {
-        	respuestaDTO = businessDelegatorView.retirarDinero(numeroCuenta, login, valor);            
+        	respuestaDTO = businessDelegatorView.retirarDinero(numeroCuenta, login, valor, cliId, clave);            
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             throw e;

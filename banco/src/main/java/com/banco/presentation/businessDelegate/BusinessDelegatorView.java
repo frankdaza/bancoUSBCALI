@@ -514,12 +514,12 @@ public class BusinessDelegatorView implements IBusinessDelegatorView {
 	}
 
 	@Override
-	public Integer consignarACuenta(String numeroCuenta, String login, Double valor) throws Exception {
-		return this.transaccionLogic.consignarACuenta(numeroCuenta, login, valor);
+	public Integer consignarACuenta(String numeroCuenta, String login, Double valor, Long cliId) throws Exception {
+		return this.transaccionLogic.consignarACuenta(numeroCuenta, login, valor, cliId);
 	}
 
 	@Override
-	public RespuestaDTO retirarDinero(String numeroCuenta, String login, Double valor) throws Exception {
-		return this.transaccionLogic.retirarDinero(numeroCuenta, login, valor);
+	public RespuestaDTO retirarDinero(String numeroCuenta, String login, Double valor, Long cliId, String clave) throws Exception {
+		return this.transaccionLogic.retirarDinero(numeroCuenta, login, valor, cliId, clave);
 	}
 }

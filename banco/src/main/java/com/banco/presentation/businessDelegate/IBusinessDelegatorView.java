@@ -249,8 +249,8 @@ public interface IBusinessDelegatorView {
      */
     Usuario getUsuarioPorLogin(String login) throws Exception;
     
-    Integer consignarACuenta(String numeroCuenta, String login, Double valor) throws Exception;
+    Integer consignarACuenta(String numeroCuenta, String login, Double valor, Long cliId) throws Exception;
     
-    RespuestaDTO retirarDinero(String numeroCuenta, String login, Double valor) throws Exception;
+    RespuestaDTO retirarDinero(String numeroCuenta, String login, Double valor, Long cliId, String clave) throws Exception;
 
 }
