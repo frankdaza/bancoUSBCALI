@@ -1,30 +1,5 @@
 package com.banco.model.control;
 
-import com.banco.dataaccess.dao.*;
-
-import com.banco.dto.mapper.ICuentaMapper;
-
-import com.banco.exceptions.*;
-
-import com.banco.model.*;
-import com.banco.model.dto.CuentaDTO;
-
-import com.banco.utilities.Utilities;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
-import org.springframework.context.annotation.Scope;
-
-import org.springframework.stereotype.Service;
-
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.math.BigDecimal;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -32,6 +7,25 @@ import java.util.Set;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.banco.dataaccess.dao.ICuentaDAO;
+import com.banco.dataaccess.dao.ICuentaRegistradaDAO;
+import com.banco.dataaccess.dao.ITransaccionDAO;
+import com.banco.dto.mapper.ICuentaMapper;
+import com.banco.exceptions.ZMessManager;
+import com.banco.model.Cuenta;
+import com.banco.model.CuentaRegistrada;
+import com.banco.model.Transaccion;
+import com.banco.model.dto.CuentaDTO;
+import com.banco.utilities.Utilities;
 
 
 /**
@@ -126,13 +120,7 @@ public class CuentaLogic implements ICuentaLogic {
             }
 
             validateCuenta(entity);
-
-            if (getCuenta(entity.getCuenId()) != null) {
-                throw new ZMessManager(ZMessManager.ENTITY_WITHSAMEKEY);
-            }
-
             cuentaDAO.save(entity);
-
             log.debug("save Cuenta successful");
         } catch (Exception e) {
             log.error("save Cuenta failed", e);

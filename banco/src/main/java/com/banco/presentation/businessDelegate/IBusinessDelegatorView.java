@@ -1,5 +1,7 @@
 package com.banco.presentation.businessDelegate;
 
+import java.util.List;
+
 import com.banco.model.Cliente;
 import com.banco.model.Cuenta;
 import com.banco.model.CuentaRegistrada;
@@ -8,42 +10,15 @@ import com.banco.model.TipoTransaccion;
 import com.banco.model.TipoUsuario;
 import com.banco.model.Transaccion;
 import com.banco.model.Usuario;
-import com.banco.model.control.ClienteLogic;
-import com.banco.model.control.CuentaLogic;
-import com.banco.model.control.CuentaRegistradaLogic;
-import com.banco.model.control.IClienteLogic;
-import com.banco.model.control.ICuentaLogic;
-import com.banco.model.control.ICuentaRegistradaLogic;
-import com.banco.model.control.ITipoDocumentoLogic;
-import com.banco.model.control.ITipoTransaccionLogic;
-import com.banco.model.control.ITipoUsuarioLogic;
-import com.banco.model.control.ITransaccionLogic;
-import com.banco.model.control.IUsuarioLogic;
-import com.banco.model.control.TipoDocumentoLogic;
-import com.banco.model.control.TipoTransaccionLogic;
-import com.banco.model.control.TipoUsuarioLogic;
-import com.banco.model.control.TransaccionLogic;
-import com.banco.model.control.UsuarioLogic;
 import com.banco.model.dto.ClienteDTO;
 import com.banco.model.dto.CuentaDTO;
 import com.banco.model.dto.CuentaRegistradaDTO;
+import com.banco.model.dto.RespuestaDTO;
 import com.banco.model.dto.TipoDocumentoDTO;
 import com.banco.model.dto.TipoTransaccionDTO;
 import com.banco.model.dto.TipoUsuarioDTO;
 import com.banco.model.dto.TransaccionDTO;
 import com.banco.model.dto.UsuarioDTO;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
-import org.springframework.context.annotation.Scope;
-
-import org.springframework.stereotype.Service;
-
-import java.math.BigDecimal;
-
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
 
 
 /**
@@ -264,4 +239,18 @@ public interface IBusinessDelegatorView {
 
     public void validateTipoUsuario(TipoUsuario tipoUsuario)
         throws Exception;
+
+    /**
+     * Retorna un usuario por login.
+     * 
+     * @param login
+     * @return
+     * @throws Exception
+     */
+    Usuario getUsuarioPorLogin(String login) throws Exception;
+    
+    Integer consignarACuenta(String numeroCuenta, String login, Double valor) throws Exception;
+    
+    RespuestaDTO retirarDinero(String numeroCuenta, String login, Double valor) throws Exception;
+
 }

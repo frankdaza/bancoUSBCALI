@@ -11,7 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
-
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -33,6 +33,7 @@ public class UsuarioRestController {
     @Autowired
     private IUsuarioMapper usuarioMapper;
 
+    @CrossOrigin
     @PostMapping(value = "/saveUsuario")
     public void saveUsuario(@RequestBody
     UsuarioDTO usuarioDTO) throws Exception {
@@ -46,6 +47,7 @@ public class UsuarioRestController {
         }
     }
 
+    @CrossOrigin
     @DeleteMapping(value = "/deleteUsuario/{usuUsuario}")
     public void deleteUsuario(@PathVariable("usuUsuario")
     String usuUsuario) throws Exception {
@@ -59,6 +61,7 @@ public class UsuarioRestController {
         }
     }
 
+    @CrossOrigin
     @PutMapping(value = "/updateUsuario/")
     public void updateUsuario(@RequestBody
     UsuarioDTO usuarioDTO) throws Exception {
@@ -72,6 +75,7 @@ public class UsuarioRestController {
         }
     }
 
+    @CrossOrigin
     @GetMapping(value = "/getDataUsuario")
     public List<UsuarioDTO> getDataUsuario() throws Exception {
         try {
@@ -82,6 +86,7 @@ public class UsuarioRestController {
         }
     }
 
+    @CrossOrigin
     @GetMapping(value = "/getUsuario/{usuUsuario}")
     public UsuarioDTO getUsuario(@PathVariable("usuUsuario")
     String usuUsuario) throws Exception {
@@ -95,4 +100,19 @@ public class UsuarioRestController {
 
         return null;
     }
+    
+    @CrossOrigin
+    @GetMapping(value = "/getUsuarioPorLogin/{login}")
+    public Usuario getUsuarioPorLogin(@PathVariable("login")
+    String login) throws Exception {
+        try {
+            Usuario usuario = businessDelegatorView.getUsuarioPorLogin(login);
+            return usuario;
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+
+        return null;
+    }
+    
 }

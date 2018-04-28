@@ -3,6 +3,7 @@ package com.banco.rest.controllers;
 import com.banco.dto.mapper.ITransaccionMapper;
 
 import com.banco.model.*;
+import com.banco.model.dto.RespuestaDTO;
 import com.banco.model.dto.TransaccionDTO;
 
 import com.banco.presentation.businessDelegate.IBusinessDelegatorView;
@@ -11,7 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
-
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -95,4 +96,47 @@ public class TransaccionRestController {
 
         return null;
     }
+    
+    
+    @CrossOrigin
+    @GetMapping(value = "/consignarTransaccion/{numeroCuenta}/{login}/{valor}")
+    public RespuestaDTO consignarTransaccion(@PathVariable("numeroCuenta") String numeroCuenta,
+    		@PathVariable("login") String login,
+    		@PathVariable("valor") Double valor) throws Exception {
+    	RespuestaDTO respuestaDTO = null;
+        try {
+            Integer codigo = businessDelegatorView.consignarACuenta(numeroCuenta, login, valor);
+            respuestaDTO = new RespuestaDTO();
+            respuestaDTO.setCodigoError(codigo);
+            
+            String mensajeError;
+            
+            if (codigo == 0)
+            	mensajeError = "Error al consignar";
+            else
+            	mensajeError = "Consignación realizada exitosamente";
+            
+            respuestaDTO.setMensajeError(mensajeError);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw e;
+        }
+        return respuestaDTO;
+    }
+    
+    @CrossOrigin
+    @GetMapping(value = "/retiroTransaccion/{numeroCuenta}/{login}/{valor}")
+    public RespuestaDTO retiroTransaccion(@PathVariable("numeroCuenta") String numeroCuenta,
+    		@PathVariable("login") String login,
+    		@PathVariable("valor") Double valor) throws Exception {
+    	RespuestaDTO respuestaDTO = null;
+        try {
+        	respuestaDTO = businessDelegatorView.retirarDinero(numeroCuenta, login, valor);            
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw e;
+        }
+        return respuestaDTO;
+    }
+    
 }

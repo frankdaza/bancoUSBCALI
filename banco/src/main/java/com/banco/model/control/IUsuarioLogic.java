@@ -1,14 +1,9 @@
 package com.banco.model.control;
 
+import java.util.List;
+
 import com.banco.model.Usuario;
 import com.banco.model.dto.UsuarioDTO;
-
-import java.math.BigDecimal;
-
-import java.util.*;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
 
 
 /**
@@ -55,4 +50,13 @@ public interface IUsuarioLogic {
     public List<UsuarioDTO> getDataUsuario() throws Exception;
 
     public void validateUsuario(Usuario usuario) throws Exception;
+    
+    /**
+     * Retorna un usuario por login.
+     * 
+     * @param login
+     * @return
+     * @throws Exception
+     */
+    Usuario getUsuarioPorLogin(String login) throws Exception;
 }

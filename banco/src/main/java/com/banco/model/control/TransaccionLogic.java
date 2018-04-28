@@ -1,30 +1,5 @@
 package com.banco.model.control;
 
-import com.banco.dataaccess.dao.*;
-
-import com.banco.dto.mapper.ITransaccionMapper;
-
-import com.banco.exceptions.*;
-
-import com.banco.model.*;
-import com.banco.model.dto.TransaccionDTO;
-
-import com.banco.utilities.Utilities;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
-import org.springframework.context.annotation.Scope;
-
-import org.springframework.stereotype.Service;
-
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.math.BigDecimal;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -32,6 +7,25 @@ import java.util.Set;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.banco.dataaccess.dao.ITransaccionDAO;
+import com.banco.dto.mapper.ITransaccionMapper;
+import com.banco.exceptions.ZMessManager;
+import com.banco.model.Cuenta;
+import com.banco.model.TipoTransaccion;
+import com.banco.model.Transaccion;
+import com.banco.model.Usuario;
+import com.banco.model.dto.RespuestaDTO;
+import com.banco.model.dto.TransaccionDTO;
+import com.banco.utilities.Utilities;
 
 
 /**
@@ -43,38 +37,18 @@ import javax.validation.Validator;
 @Service("TransaccionLogic")
 public class TransaccionLogic implements ITransaccionLogic {
     private static final Logger log = LoggerFactory.getLogger(TransaccionLogic.class);
-
-    /**
-     * DAO injected by Spring that manages Transaccion entities
-     *
-     */
     @Autowired
     private ITransaccionDAO transaccionDAO;
     @Autowired
     private ITransaccionMapper transaccionMapper;
     @Autowired
     private Validator validator;
-
-    /**
-    * Logic injected by Spring that manages Cuenta entities
-    *
-    */
     @Autowired
-    ICuentaLogic logicCuenta1;
-
-    /**
-    * Logic injected by Spring that manages TipoTransaccion entities
-    *
-    */
+    private ICuentaLogic cuentaLogic;
     @Autowired
-    ITipoTransaccionLogic logicTipoTransaccion2;
-
-    /**
-    * Logic injected by Spring that manages Usuario entities
-    *
-    */
+    private ITipoTransaccionLogic tipoTransaccionLogic;
     @Autowired
-    IUsuarioLogic logicUsuario3;
+    private IUsuarioLogic usuarioLogic;
 
     public void validateTransaccion(Transaccion transaccion)
         throws Exception {
@@ -125,15 +99,8 @@ public class TransaccionLogic implements ITransaccionLogic {
             if (entity == null) {
                 throw new ZMessManager().new NullEntityExcepcion("Transaccion");
             }
-
             validateTransaccion(entity);
-
-            if (getTransaccion(entity.getTranId()) != null) {
-                throw new ZMessManager(ZMessManager.ENTITY_WITHSAMEKEY);
-            }
-
             transaccionDAO.save(entity);
-
             log.debug("save Transaccion successful");
         } catch (Exception e) {
             log.error("save Transaccion failed", e);
@@ -418,4 +385,94 @@ public class TransaccionLogic implements ITransaccionLogic {
 
         return list;
     }
+
+	@Override
+	@Transactional(readOnly = false, propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+	public Integer consignarACuenta(String numeroCuenta, String login, Double valor) throws Exception {
+		Integer codigoExito = 0; // 0 -> No exitoso, 1 -> Exitoso.
+		try {
+			// Verifico que la cuenta exista y sea activa
+			Object[] variablesCuenta = {"cuenId", true, numeroCuenta, "=",
+											"activa", true, "S", "="};
+			List<Cuenta> listCuenta = this.cuentaLogic.findByCriteria(variablesCuenta, null, null);
+			if (listCuenta != null && !listCuenta.isEmpty() && valor > 0D) {				
+				Cuenta cuentaCons = listCuenta.get(0);
+				
+				// Obtengo el objeto de consignacion
+				TipoTransaccion tipoTransaccion = this.tipoTransaccionLogic.getTipoTransaccion(2L);
+				
+				// Obtengo el usuario
+				Usuario usuario = this.usuarioLogic.getUsuario(login);
+				
+				// Creo una transacción
+				Transaccion transaccion = new Transaccion();
+				transaccion.setCuenta(cuentaCons);
+				transaccion.setFecha(new Date());
+				transaccion.setTipoTransaccion(tipoTransaccion);
+				transaccion.setUsuario(usuario);
+				transaccion.setValor(valor);
+				saveTransaccion(transaccion);		
+				
+				// Actualizo el valor del saldo de la cuenta
+				Double nuevoValor = cuentaCons.getSaldo() + valor;
+				cuentaCons.setSaldo(nuevoValor);
+				this.cuentaLogic.updateCuenta(cuentaCons);
+				codigoExito = 1; // Codigo exitoso
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		}
+		return codigoExito;
+	}
+
+	@Override
+	@Transactional(readOnly = false, propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+	public RespuestaDTO retirarDinero(String numeroCuenta, String login, Double valor) throws Exception {
+		RespuestaDTO respuestaDTO = new RespuestaDTO(); // 0 -> No exitoso, 1 -> Exitoso.
+		try {
+			// Verifico que la cuenta exista y sea activa
+			Object[] variablesCuenta = {"cuenId", true, numeroCuenta, "=",
+											"activa", true, "S", "="};
+			List<Cuenta> listCuenta = this.cuentaLogic.findByCriteria(variablesCuenta, null, null);
+			if (listCuenta != null && !listCuenta.isEmpty() && valor > 0D) {				
+				Cuenta cuentaCons = listCuenta.get(0);
+				
+				// Verifico que el valor a retirar sea menor o igual al valor que existe en la cuenta
+				if (valor <= cuentaCons.getSaldo()) {
+					// Obtengo el objeto de retirar
+					TipoTransaccion tipoTransaccion = this.tipoTransaccionLogic.getTipoTransaccion(1L);
+					
+					// Obtengo el usuario
+					Usuario usuario = this.usuarioLogic.getUsuario(login);
+					
+					// Creo una transacción
+					Transaccion transaccion = new Transaccion();
+					transaccion.setCuenta(cuentaCons);
+					transaccion.setFecha(new Date());
+					transaccion.setTipoTransaccion(tipoTransaccion);
+					transaccion.setUsuario(usuario);
+					transaccion.setValor(valor);
+					saveTransaccion(transaccion);		
+					
+					// Actualizo el valor del saldo de la cuenta
+					Double nuevoValor = cuentaCons.getSaldo() - valor;
+					cuentaCons.setSaldo(nuevoValor);
+					this.cuentaLogic.updateCuenta(cuentaCons);
+					respuestaDTO.setCodigoError(1); // Codigo exitoso
+					respuestaDTO.setMensajeError("El retiro se ha realizado satisfactoriamente.");
+				} else {
+					respuestaDTO.setCodigoError(0); // Codigo error
+					respuestaDTO.setMensajeError("No hay fondos sufientes para retirar el valor solicitado.");
+				}
+			} else {
+				respuestaDTO.setCodigoError(0); // Codigo error
+				respuestaDTO.setMensajeError("No se ha podido realizar el retiro.");
+			}
+		} catch (Exception e) {
+			respuestaDTO.setCodigoError(0); // Codigo error
+			respuestaDTO.setMensajeError(e.getMessage());
+			log.error(e.getMessage(), e);
+		}
+		return respuestaDTO;
+	}
 }

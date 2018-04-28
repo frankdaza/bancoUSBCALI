@@ -120,10 +120,6 @@ public class UsuarioLogic implements IUsuarioLogic {
 
             validateUsuario(entity);
 
-            if (getUsuario(entity.getUsuUsuario()) != null) {
-                throw new ZMessManager(ZMessManager.ENTITY_WITHSAMEKEY);
-            }
-
             usuarioDAO.save(entity);
 
             log.debug("save Usuario successful");
@@ -419,4 +415,22 @@ public class UsuarioLogic implements IUsuarioLogic {
 
         return list;
     }
+
+	@Override
+	public Usuario getUsuarioPorLogin(String login) throws Exception {
+		Usuario usuario = null;
+		try {
+			Object[] variables = {"usuUsuario", true, login, "="};
+			List<Usuario> listUsuario = findByCriteria(variables, null, null);
+			
+			if (listUsuario != null && !listUsuario.isEmpty())
+				usuario = listUsuario.get(0);
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			throw e;
+		}
+		return usuario;
+	}
+
+	
 }

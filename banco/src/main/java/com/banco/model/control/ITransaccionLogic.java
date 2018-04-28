@@ -1,59 +1,54 @@
 package com.banco.model.control;
 
+import java.util.List;
+
 import com.banco.model.Transaccion;
+import com.banco.model.dto.RespuestaDTO;
 import com.banco.model.dto.TransaccionDTO;
 
-import java.math.BigDecimal;
-
-import java.util.*;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
-
-
 /**
-* @author Zathura Code Generator http://zathuracode.org/
-* www.zathuracode.org
-*
-*/
+ * @author Zathura Code Generator http://zathuracode.org/ www.zathuracode.org
+ *
+ */
 public interface ITransaccionLogic {
-    public List<Transaccion> getTransaccion() throws Exception;
+	List<Transaccion> getTransaccion() throws Exception;
 
-    /**
-         * Save an new Transaccion entity
-         */
-    public void saveTransaccion(Transaccion entity) throws Exception;
+	/**
+	 * Save an new Transaccion entity
+	 */
+	void saveTransaccion(Transaccion entity) throws Exception;
 
-    /**
-         * Delete an existing Transaccion entity
-         *
-         */
-    public void deleteTransaccion(Transaccion entity) throws Exception;
+	/**
+	 * Delete an existing Transaccion entity
+	 *
+	 */
+	void deleteTransaccion(Transaccion entity) throws Exception;
 
-    /**
-        * Update an existing Transaccion entity
-        *
-        */
-    public void updateTransaccion(Transaccion entity) throws Exception;
+	/**
+	 * Update an existing Transaccion entity
+	 *
+	 */
+	void updateTransaccion(Transaccion entity) throws Exception;
 
-    /**
-         * Load an existing Transaccion entity
-         *
-         */
-    public Transaccion getTransaccion(Long tranId) throws Exception;
+	/**
+	 * Load an existing Transaccion entity
+	 *
+	 */
+	Transaccion getTransaccion(Long tranId) throws Exception;
 
-    public List<Transaccion> findByCriteria(Object[] variables,
-        Object[] variablesBetween, Object[] variablesBetweenDates)
-        throws Exception;
+	List<Transaccion> findByCriteria(Object[] variables, Object[] variablesBetween,
+			Object[] variablesBetweenDates) throws Exception;
 
-    public List<Transaccion> findPageTransaccion(String sortColumnName,
-        boolean sortAscending, int startRow, int maxResults)
-        throws Exception;
+	List<Transaccion> findPageTransaccion(String sortColumnName, boolean sortAscending, int startRow,
+			int maxResults) throws Exception;
 
-    public Long findTotalNumberTransaccion() throws Exception;
+	Long findTotalNumberTransaccion() throws Exception;
 
-    public List<TransaccionDTO> getDataTransaccion() throws Exception;
+	List<TransaccionDTO> getDataTransaccion() throws Exception;
 
-    public void validateTransaccion(Transaccion transaccion)
-        throws Exception;
+	void validateTransaccion(Transaccion transaccion) throws Exception;
+		
+	Integer consignarACuenta(String numeroCuenta, String login, Double valor) throws Exception;
+	
+	RespuestaDTO retirarDinero(String numeroCuenta, String login, Double valor) throws Exception;
 }
